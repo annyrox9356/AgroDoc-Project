@@ -4,62 +4,54 @@ import torch.nn as nn
 import torch.optim as optim
 from dataset import get_data_loaders
 from model import get_model
-from tqdm import tqdm  # tqdm ko import karo
+from tqdm import tqdm
 
 def train_model(num_epochs=5, batch_size=32, learning_rate=0.001):
-    # 1. Device configuration - Tumhare RTX 2050 (CUDA) ko detect karega
+    # Set device configuration (uses GPU if available, otherwise CPU)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f"[*] Training on device: {device}")
 
-    # 2. Directories setup
-    # 2. Directories setup
+    # Set up directory paths
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    # Yahan 'data' ke aage folder ka naam add kiya hai
     DATA_DIR = os.path.join(BASE_DIR, 'data')
     SAVE_DIR = os.path.join(BASE_DIR, 'saved_models')
     os.makedirs(SAVE_DIR, exist_ok=True)
     
-    # 3. Load Data using dataset.py
+    # Load dataset using data loaders
     train_loader, valid_loader, class_names = get_data_loaders(DATA_DIR, batch_size=batch_size)
     num_classes = len(class_names)
     print(f"[*] Total classes to predict: {num_classes}")
 
-    # 4. Initialize Model, Loss Function, and Optimizer
+    # Initialize model, loss function, and optimizer
     model = get_model(num_classes=num_classes).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
     best_val_acc = 0.0
 
-    # 5. The Training Loop
+    # Main training loop across epochs
     for epoch in range(num_epochs):
         print(f'\nEpoch {epoch+1}/{num_epochs}')
         print('-' * 20)
 
         # ---------------- TRAINING PHASE ----------------
-        model.train()  # Model ko training mode mein set karna
+        model.train()
         running_loss = 0.0
         running_corrects = 0
 
-        # tqdm wrapper lagane se terminal me progress bar dikhne lagega
         train_bar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]", leave=True)
-        for inputs, labels in train_loader:
-            # Data ko GPU par bhejna
+        for inputs, labels in train_bar:
             inputs, labels = inputs.to(device), labels.to(device)
 
-            # Purane gradients ko zero karna
             optimizer.zero_grad()
 
-            # Forward pass: predictions nikalna
             outputs = model(inputs)
             loss = criterion(outputs, labels)
             _, preds = torch.max(outputs, 1)
 
-            # Backward pass: weights update karna
             loss.backward()
             optimizer.step()
 
-            # Loss aur accuracy track karna
             running_loss += loss.item() * inputs.size(0)
             running_corrects += torch.sum(preds == labels.data)
 
@@ -68,13 +60,13 @@ def train_model(num_epochs=5, batch_size=32, learning_rate=0.001):
         print(f'Train -> Loss: {epoch_loss:.4f} | Accuracy: {epoch_acc:.4f}')
 
         # ---------------- VALIDATION PHASE ----------------
-        model.eval()  # Model ko evaluation mode mein set karna
+        model.eval()
         val_loss = 0.0
         val_corrects = 0
 
         val_bar = tqdm(valid_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Valid]", leave=True)
-        with torch.no_grad(): # Validation ke waqt gradients calculate nahi karte (Memory bachati hai)
-            for inputs, labels in valid_loader:
+        with torch.no_grad():
+            for inputs, labels in val_bar:
                 inputs, labels = inputs.to(device), labels.to(device)
 
                 outputs = model(inputs)
@@ -98,5 +90,4 @@ def train_model(num_epochs=5, batch_size=32, learning_rate=0.001):
     print(f"\n[*] Training Complete. Best Validation Accuracy: {best_val_acc:.4f}")
 
 if __name__ == '__main__':
-    # Epochs ko 5 rakha hai testing ke liye. Data copy hone ke baad isko run karenge.
     train_model(num_epochs=5, batch_size=32)

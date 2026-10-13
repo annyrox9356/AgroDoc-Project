@@ -5,7 +5,7 @@ import os
 
 app = FastAPI(title="AgroDoc API", description="Plant Leaf Disease Detection using PyTorch & ResNet18")
 
-# CORS middleware enable karna taaki Streamlit ya koi bhi frontend easily connect kar sake
+# Enable CORS middleware to allow frontends (like Streamlit) to connect smoothly
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -14,7 +14,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 38 Classes ki list (PlantVillage dataset ki standard classes)
+# List of 38 standard classes from the PlantVillage dataset
 CLASS_NAMES = [
     'Apple___Apple_scab', 'Apple___Black_rot', 'Apple___Cedar_apple_rust', 'Apple___healthy',
     'Blueberry___healthy', 'Cherry_(including_sour)___Powdery_mildew', 'Cherry_(including_sour)___healthy',
@@ -30,11 +30,11 @@ CLASS_NAMES = [
     'Tomato___Tomato_Yellow_Leaf_Curl_Virus', 'Tomato___Tomato_mosaic_virus', 'Tomato___healthy'
 ]
 
-# Model path setup
+# Set up model weights path
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_PATH = os.path.join(BASE_DIR, 'saved_models', 'agrodoc_best_model.pth')
 
-# Predictor instance initialize karna (Agar model train hokar save ho gaya hoga toh load ho jayega)
+# Initialize the predictor instance if trained weights exist
 predictor = None
 if os.path.exists(MODEL_PATH):
     predictor = AgroDocPredictor(model_path=MODEL_PATH, num_classes=len(CLASS_NAMES))
@@ -52,10 +52,10 @@ async def predict(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail="Model is not loaded yet. Train the model first.")
     
     try:
-        # Upload ki hui image ke bytes read karna
+        # Read uploaded image bytes
         image_bytes = await file.read()
         
-        # Inference class se prediction nikalna
+        # Run inference using the predictor class
         predicted_class, confidence = predictor.predict_image(image_bytes, CLASS_NAMES)
         
         return {
