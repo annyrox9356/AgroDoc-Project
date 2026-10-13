@@ -1,0 +1,25 @@
+# Environments
+.env
+.venv
+env/
+agrodoc_env/
+
+# Datasets aur Images
+data/
+*.jpeg
+*.jpg
+*.png
+
+# Model Artifacts (Weights)
+*.pth
+*.pt
+*.h5
+*.tflite
+
+# Python Cache
+__pycache__/
+*.pyc
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+
