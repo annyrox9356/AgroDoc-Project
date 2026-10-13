@@ -36,8 +36,8 @@ def get_data_loaders(data_dir, batch_size=32, img_size=(224, 224)):
 
     # Create DataLoaders
     # num_workers=2 se CPU parallel data fetch karega taaki GPU khali na baithna pade
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=2, pin_memory=True)
-    valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False, num_workers=2, pin_memory=True)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers= 0,pin_memory=True)
+    valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False, num_workers=0,pin_memory=True)
 
     class_names = train_dataset.classes
     print(f"Total Classes Found: {len(class_names)}")

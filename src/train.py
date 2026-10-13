@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.optim as optim
 from dataset import get_data_loaders
 from model import get_model
+from tqdm import tqdm  # tqdm ko import karo
 
 def train_model(num_epochs=5, batch_size=32, learning_rate=0.001):
     # 1. Device configuration - Tumhare RTX 2050 (CUDA) ko detect karega
@@ -11,7 +12,9 @@ def train_model(num_epochs=5, batch_size=32, learning_rate=0.001):
     print(f"[*] Training on device: {device}")
 
     # 2. Directories setup
+    # 2. Directories setup
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    # Yahan 'data' ke aage folder ka naam add kiya hai
     DATA_DIR = os.path.join(BASE_DIR, 'data')
     SAVE_DIR = os.path.join(BASE_DIR, 'saved_models')
     os.makedirs(SAVE_DIR, exist_ok=True)
@@ -38,6 +41,8 @@ def train_model(num_epochs=5, batch_size=32, learning_rate=0.001):
         running_loss = 0.0
         running_corrects = 0
 
+        # tqdm wrapper lagane se terminal me progress bar dikhne lagega
+        train_bar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]", leave=True)
         for inputs, labels in train_loader:
             # Data ko GPU par bhejna
             inputs, labels = inputs.to(device), labels.to(device)
@@ -67,6 +72,7 @@ def train_model(num_epochs=5, batch_size=32, learning_rate=0.001):
         val_loss = 0.0
         val_corrects = 0
 
+        val_bar = tqdm(valid_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Valid]", leave=True)
         with torch.no_grad(): # Validation ke waqt gradients calculate nahi karte (Memory bachati hai)
             for inputs, labels in valid_loader:
                 inputs, labels = inputs.to(device), labels.to(device)
