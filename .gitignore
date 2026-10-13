@@ -23,3 +23,7 @@ __pycache__/
 # Jupyter Notebook Checkpoints
 .ipynb_checkpoints/
 
+extract.py
+training_agro.ipynb
+
+saved_models
